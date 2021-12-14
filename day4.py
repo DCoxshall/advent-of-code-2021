@@ -1,5 +1,8 @@
 # Part 1
 
+import copy
+from typing import BinaryIO
+
 test_boards = [
     [[22, 13, 17, 11, 0],
      [8, 2, 23, 4, 24],
@@ -75,20 +78,54 @@ for i in range(len(real_boards)):
         for k in range(5):
             real_boards[i][j][k] = int(real_boards[i][j][k])
 
-marking_boards = real_boards.copy()
+marking_boards = copy.deepcopy(real_boards)
 
 real_input = [int(x) for x in real_input.split(",")]
 
-first_completed = None
-for i in real_input:
-    for j in range(len(marking_boards)):
-        for k in range(5):
-            for l in range(5):
-                if marking_boards[j][k][l] == i:
-                    marking_boards[j][k][l] = "#"
-                    if finished(marking_boards[i]) and first_completed == None:
-                        first_completed = j
 
-for i in marking_boards:
-    print(i)
-print(first_completed)
+def solve(real_input):
+    found_last_board = False
+    print(real_input)
+    while True:
+        if found_last_board:
+            break
+        i = real_input[0]
+        real_input = real_input[1:]
+        for j in range(len(marking_boards)):
+            for k in range(5):
+                for l in range(5):
+                    if marking_boards[j] != "deletedBoard":
+                        if marking_boards[j][k][l] == i:
+                            marking_boards[j][k][l] = "#"
+                            if finished(marking_boards[j]):
+                                marking_boards[j] = "deletedBoard"
+            if (len([x for x in marking_boards if x != "deletedBoard"]) == 1) and not found_last_board:
+                final_board_index = j
+                final_board = [
+                    i for i in marking_boards if i != "deletedBoard"][0]
+                found_last_board = True
+
+    for i in real_input:
+        for j in range(len(final_board)):
+            for k in range(5):
+                if final_board[j][k] == i:
+                    final_board[j][k] = "#"
+                    if finished(final_board):
+                        final_number = i
+                        return (final_board_index, final_number)
+
+
+result = solve(real_input)
+score = result[-1]
+marking_boards = [i for i in marking_boards if i != "deletedBoard"]
+final_board = marking_boards[0]
+temp = 0
+for i in final_board:
+    for j in i:
+        if type(j) == int:
+            temp += j
+print(result)
+print(score)
+print(temp)
+print(score * temp)
+print(marking_boards)
